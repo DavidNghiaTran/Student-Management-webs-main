@@ -1,0 +1,227 @@
+{% extends "_layout.html" %}
+
+{% block title %}Quản lý Giáo viên{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Quản lý Giáo viên</h1>
+    <button id="openAddModalBtn" class="btn btn-primary">
+        <i class="fa-solid fa-user-plus"></i> Thêm Giáo viên
+    </button>
+</div>
+
+<!-- Add Teacher Modal -->
+<div id="addTeacherModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm Giáo viên mới</h3>
+            <span class="close-modal" data-modal="addTeacherModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="post" action="{{ url_for('admin_manage_teachers') }}" class="form-grid two">
+                <div>
+                    <label>Tên đăng nhập (Mã GV) <span style="color: red;">*</span></label>
+                    <input type="text" name="username" required placeholder="VD: gv001">
+                </div>
+                <div>
+                    <label>Mật khẩu <span style="color: red;">*</span></label>
+                    <input type="password" name="password" required placeholder="******">
+                </div>
+                <div style="grid-column: 1/-1;">
+                    <label>Họ và tên <span style="color: red;">*</span></label>
+                    <input type="text" name="ho_ten" required placeholder="VD: Nguyễn Văn A">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="email@example.com">
+                </div>
+                <div>
+                    <label>Số điện thoại</label>
+                    <input type="text" name="so_dien_thoai" placeholder="0912345678">
+                </div>
+                <div>
+                    <label>Khoa / Bộ môn</label>
+                    <input type="text" name="khoa_bo_mon" placeholder="CNTT">
+                </div>
+                <div>
+                    <label>Học vị</label>
+                    <select name="hoc_vi">
+                        <option value="">-- Chọn --</option>
+                        <option value="Cử nhân">Cử nhân</option>
+                        <option value="Thạc sĩ">Thạc sĩ</option>
+                        <option value="Tiến sĩ">Tiến sĩ</option>
+                        <option value="Phó Giáo sư">Phó Giáo sư</option>
+                        <option value="Giáo sư">Giáo sư</option>
+                    </select>
+                </div>
+
+                <div class="form-actions" style="grid-column: 1/-1; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Teacher Modal (Template for JS to populate) -->
+<div id="editTeacherModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cập nhật thông tin Giáo viên</h3>
+            <span class="close-modal" data-modal="editTeacherModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="editTeacherForm" method="post" class="form-grid two">
+                <div style="grid-column: 1/-1;">
+                    <label>Họ và tên <span style="color: red;">*</span></label>
+                    <input type="text" name="ho_ten" id="edit_ho_ten" required>
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" name="email" id="edit_email">
+                </div>
+                <div>
+                    <label>Số điện thoại</label>
+                    <input type="text" name="so_dien_thoai" id="edit_so_dien_thoai">
+                </div>
+                <div>
+                    <label>Khoa / Bộ môn</label>
+                    <input type="text" name="khoa_bo_mon" id="edit_khoa_bo_mon">
+                </div>
+                <div>
+                    <label>Học vị</label>
+                    <select name="hoc_vi" id="edit_hoc_vi">
+                        <option value="">-- Chọn --</option>
+                        <option value="Cử nhân">Cử nhân</option>
+                        <option value="Thạc sĩ">Thạc sĩ</option>
+                        <option value="Tiến sĩ">Tiến sĩ</option>
+                        <option value="Phó Giáo sư">Phó Giáo sư</option>
+                        <option value="Giáo sư">Giáo sư</option>
+                    </select>
+                </div>
+                <div style="grid-column: 1/-1; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 10px;">
+                    <label>Đổi mật khẩu (Để trống nếu không đổi)</label>
+                    <input type="password" name="new_password" placeholder="Mật khẩu mới...">
+                </div>
+
+                <div class="form-actions" style="grid-column: 1/-1; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Danh sách Giáo viên</div>
+    <div class="card-body">
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã GV</th>
+                        <th>Họ tên</th>
+                        <th>Khoa/Bộ môn</th>
+                        <th>Học vị</th>
+                        <th>Liên hệ</th>
+                        <th style="width: 100px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gv in teachers %}
+                    <tr>
+                        <td><strong>{{ gv.ma_gv }}</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="avatar-circle sm">{{ gv.ho_ten[0] | upper }}</div>
+                                {{ gv.ho_ten }}
+                            </div>
+                        </td>
+                        <td>{{ gv.khoa_bo_mon or '-' }}</td>
+                        <td><span class="badge">{{ gv.hoc_vi or 'N/A' }}</span></td>
+                        <td>
+                            {% if gv.email %}<div><i class="fa-solid fa-envelope"></i> {{ gv.email }}</div>{% endif %}
+                            {% if gv.so_dien_thoai %}<div><i class="fa-solid fa-phone"></i> {{ gv.so_dien_thoai }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 5px;">
+                                <button class="btn btn-secondary btn-sm"
+                                    onclick="openEditModal('{{ gv.ma_gv }}', '{{ gv.ho_ten }}', '{{ gv.email or '' }}', '{{ gv.so_dien_thoai or '' }}', '{{ gv.khoa_bo_mon or '' }}', '{{ gv.hoc_vi or '' }}')">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+
+                                {% if gv.ma_gv != current_user.username %}
+                                <form method="post" action="{{ url_for('admin_delete_teacher', ma_gv=gv.ma_gv) }}"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa giáo viên {{ gv.ho_ten }}? Hành động này không thể hoàn tác.');"
+                                    style="margin: 0;">
+                                    <button type="submit" class="btn btn-secondary btn-sm danger">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Modal Helpers
+    function openModal(modalId) {
+        const m = document.getElementById(modalId);
+        if (m) {
+            m.classList.add('show');
+            m.style.display = 'flex';
+        }
+    }
+
+    function closeModal(modalId) {
+        const m = document.getElementById(modalId);
+        if (m) {
+            m.classList.remove('show');
+            m.style.display = 'none';
+        }
+    }
+
+    // Add Modal Logic
+    const addBtn = document.getElementById('openAddModalBtn');
+    if (addBtn) {
+        addBtn.onclick = () => openModal('addTeacherModal');
+    }
+
+    // Close buttons
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.onclick = function () {
+            closeModal(this.getAttribute('data-modal'));
+        }
+    });
+
+    // Outside click
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('show');
+            event.target.style.display = 'none';
+        }
+    }
+
+    // Edit Modal Logic
+    function openEditModal(ma_gv, ho_ten, email, sdt, khoa, hoc_vi) {
+        document.getElementById('edit_ho_ten').value = ho_ten;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_so_dien_thoai').value = sdt;
+        document.getElementById('edit_khoa_bo_mon').value = khoa;
+        document.getElementById('edit_hoc_vi').value = hoc_vi;
+
+        // Update form action
+        const form = document.getElementById('editTeacherForm');
+        form.action = "/admin/teachers/edit/" + ma_gv;
+
+        openModal('editTeacherModal');
+    }
+</script>
+{% endblock %}

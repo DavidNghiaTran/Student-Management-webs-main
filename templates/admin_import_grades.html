@@ -1,0 +1,276 @@
+{% extends "_layout.html" %}
+
+{% block title %}Nhập Điểm từ Excel{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .instruction-box {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: #92400e;
+    }
+
+    .instruction-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .instruction-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    code {
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: 600;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.2s;
+        background: #f8fafc;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-area:hover {
+        border-color: var(--primary-color);
+        background: #f0f9ff;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--muted-text);
+        margin-bottom: 1rem;
+        transition: color 0.2s;
+    }
+
+    .upload-area:hover .upload-icon {
+        color: var(--primary-color);
+    }
+
+    .upload-text {
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-subtext {
+        font-size: 0.9rem;
+        color: var(--muted-text);
+    }
+
+    /* Hide default file input */
+    input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .form-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-color);
+        border-color: #cbd5e1;
+    }
+
+    .file-name-display {
+        margin-top: 1rem;
+        font-weight: 500;
+        color: var(--primary-color);
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <i class="fa-solid fa-file-import" style="color: var(--primary-color);"></i>
+        Nhập Điểm từ Excel
+    </div>
+</div>
+
+<div class="card">
+    <div class="instruction-box">
+        <div class="instruction-title">
+            <i class="fa-solid fa-circle-info"></i> Yêu cầu file Excel
+        </div>
+        <ul class="instruction-list">
+            <li>Định dạng file: <code>.xlsx</code> hoặc <code>.xls</code></li>
+            <li>
+                <strong>Cột bắt buộc:</strong>
+                <ul style="margin-top: 0.5rem; list-style-type: circle;">
+                    <li><code>Mã SV</code> (Mã sinh viên)</li>
+                    <li><code>Họ tên</code> (Họ tên sinh viên)</li>
+                    <li><code>Lớp</code> (Lớp sinh viên)</li>
+                    <li><code>Mã MH</code> (Mã môn học)</li>
+                    <li><code>Tên Môn học</code> (Tên môn học)</li>
+                    <li><code>Số TC</code> (Số tín chỉ)</li>
+                    <li><code>Điểm CC</code> (Điểm chuyên cần)</li>
+                    <li><code>Điểm BT</code> (Điểm bài tập)</li>
+                    <li><code>Điểm KT</code> (Điểm kiểm tra)</li>
+                    <li><code>Điểm TH</code> (Điểm thực hành)</li>
+                    <li><code>Điểm Thi</code> (Điểm thi)</li>
+                    <li><code>Điểm TK (10)</code> (Điểm tổng kết hệ 10)</li>
+                    <li><code>Điểm Chữ</code> (Điểm chữ)</li>
+                </ul>
+            </li>
+            <li>Điểm phải là số từ 0 đến 10. Ô trống sẽ được coi là chưa có điểm.</li>
+            <li>Điểm tổng kết và điểm chữ sẽ được tự động tính toán.</li>
+        </ul>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin_import_grades') }}" enctype="multipart/form-data" id="uploadForm">
+
+        <div class="form-group">
+            <label for="ma_mh" class="form-label">Chọn Môn học cần nhập điểm:</label>
+            <select name="ma_mh" id="ma_mh" class="form-control" required>
+                <option value="">-- Vui lòng chọn môn học --</option>
+                {% for mh in danh_sach_mon_hoc %}
+                <option value="{{ mh.ma_mh }}">{{ mh.ten_mh }} ({{ mh.ma_mh }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="upload-area" id="dropZone">
+            <input type="file" name="file" id="file" accept=".xls,.xlsx" required onchange="updateFileName(this)">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+            <div class="upload-text">Kéo thả file vào đây hoặc click để chọn</div>
+            <div class="upload-subtext">Hỗ trợ định dạng .xlsx, .xls</div>
+            <div id="fileName" class="file-name-display"></div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_manage_grades') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-upload"></i> Tải lên và Nhập điểm
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const fileNameDisplay = document.getElementById('fileName');
+        if (input.files && input.files[0]) {
+            fileNameDisplay.textContent = 'File đã chọn: ' + input.files[0].name;
+            fileNameDisplay.style.display = 'block';
+        } else {
+            fileNameDisplay.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

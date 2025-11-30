@@ -1,0 +1,2 @@
+# Dummy notifications data
+notifications = []

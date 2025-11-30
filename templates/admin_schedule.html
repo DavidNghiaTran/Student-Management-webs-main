@@ -1,0 +1,290 @@
+{% extends "_layout.html" %}
+
+{% block title %}Lịch giảng dạy{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1>Lịch giảng dạy</h1>
+    {% if current_user.has_role('ADMIN') %}
+    <button id="openModalBtn" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Thêm lịch mới
+    </button>
+    {% endif %}
+</div>
+
+<!-- Modal -->
+<div id="scheduleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm buổi học/giảng dạy</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form method="post" class="form-grid two">
+                <div>
+                    <label>Tiêu đề</label>
+                    <input type="text" name="tieu_de" placeholder="VD: Cấu trúc dữ liệu" />
+                </div>
+                <div>
+                    <label>Lớp</label>
+                    <select name="lop" required>
+                        <option value="">-- Chọn lớp --</option>
+                        {% for lop in danh_sach_lop %}
+                        <option value="{{ lop }}" {% if selected_lop==lop %}selected{% endif %}>{{ lop }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Môn học</label>
+                    <select name="ma_mh">
+                        <option value="">-- Không chọn --</option>
+                        {% for mh in danh_sach_mon_hoc %}
+                        <option value="{{ mh.ma_mh }}">{{ mh.ma_mh }} - {{ mh.ten_mh }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Thứ trong tuần</label>
+                    <select name="thu_trong_tuan">
+                        <option value="">-- Tuần cố định --</option>
+                        <option>Thứ 2</option>
+                        <option>Thứ 3</option>
+                        <option>Thứ 4</option>
+                        <option>Thứ 5</option>
+                        <option>Thứ 6</option>
+                        <option>Thứ 7</option>
+                        <option>Chủ nhật</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Ngày cụ thể</label>
+                    <input type="date" name="ngay_hoc" />
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Bắt đầu</label>
+                        <input type="text" name="gio_bat_dau" placeholder="08:00" />
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Kết thúc</label>
+                        <input type="text" name="gio_ket_thuc" placeholder="10:00" />
+                    </div>
+                </div>
+                <div>
+                    <label>Phòng</label>
+                    <input type="text" name="phong" placeholder="A101" />
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label>Ghi chú</label>
+                    <textarea name="ghi_chu" rows="2" placeholder="Nội dung thêm..."></textarea>
+                </div>
+                <div class="form-actions" style="grid-column:1/-1; justify-content: flex-end; margin-top: 10px;">
+                    <button type="submit" class="btn btn-primary">Lưu lịch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header schedule-header" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 1.1rem; font-weight: 600;">Thời khóa biểu tuần: {{
+                    current_week_start.strftime('%d/%m') }} - {{ current_week_end.strftime('%d/%m/%Y') }}</span>
+            </div>
+
+            <form method="get" class="schedule-filter" style="margin: 0;">
+                <label for="lop">Lọc lớp:</label>
+                <select name="lop" id="lop" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    {% for lop in danh_sach_lop %}
+                    <option value="{{ lop }}" {% if selected_lop==lop %}selected{% endif %}>{{ lop }}</option>
+                    {% endfor %}
+                </select>
+                <!-- Giữ lại tham số week_start khi lọc lớp -->
+                <input type="hidden" name="week_start" value="{{ current_week_start.strftime('%Y-%m-%d') }}">
+            </form>
+        </div>
+
+        <div class="week-navigation"
+            style="display: flex; gap: 0.5rem; width: 100%; justify-content: center; align-items: center; background: #f8fafc; padding: 0.5rem; border-radius: var(--radius-md);">
+            <a href="{{ url_for('admin_schedule', week_start=prev_week_start.strftime('%Y-%m-%d'), lop=selected_lop) }}"
+                class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-chevron-left"></i> Tuần trước
+            </a>
+
+            <form method="get" style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <input type="hidden" name="lop" value="{{ selected_lop }}">
+                <input type="date" name="week_start" value="{{ current_week_start.strftime('%Y-%m-%d') }}"
+                    onchange="this.form.submit()"
+                    style="padding: 0.4rem; border: 1px solid var(--border-color); border-radius: 4px;">
+            </form>
+
+            <a href="{{ url_for('admin_schedule', week_start=next_week_start.strftime('%Y-%m-%d'), lop=selected_lop) }}"
+                class="btn btn-secondary btn-sm">
+                Tuần sau <i class="fa-solid fa-chevron-right"></i>
+            </a>
+
+            <a href="{{ url_for('admin_schedule', lop=selected_lop) }}" class="btn btn-secondary btn-sm"
+                style="margin-left: 1rem;">
+                Hiện tại
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        {% if not week_view.has_events %}
+        <div style="padding: 3rem; text-align: center; color: var(--muted-text);">
+            <i class="fa-regular fa-calendar-xmark" style="font-size: 3rem; margin-bottom: 1rem; color: #cbd5e1;"></i>
+            <p>Chưa có lịch học nào trong tuần này {{ 'của lớp ' ~ selected_lop if selected_lop else '' }}.</p>
+            <p>Nhấn "Thêm lịch mới" để bắt đầu.</p>
+        </div>
+        {% else %}
+        <div class="schedule-wrapper" style="border: none; border-radius: 0;">
+            <div class="week-grid">
+                <div class="week-grid-header">
+                    <div class="time-head">Thời gian</div>
+                    {% for day in week_view.days %}
+                    <div class="day-head {% if day.key == 'sun' %}weekend{% endif %}">
+                        <span class="day-name">{{ day.label }}</span>
+                        <span class="day-date" style="font-size: 0.85em; color: var(--primary-color); display: block;">
+                            {{ week_view.day_dates[day.key] or '' }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="week-grid-body">
+                    <div class="time-col">
+                        {% for slot in week_view.time_slots %}
+                        <div class="time-cell">{{ slot.label }}</div>
+                        {% endfor %}
+                    </div>
+                    {% for day in week_view.days %}
+                    <div class="day-col {% if day.key == 'sun' %}weekend{% endif %}">
+                        <div class="hour-grid">
+                            {% for slot in week_view.time_slots %}
+                            <div class="hour-row"></div>
+                            {% endfor %}
+                        </div>
+                        {% for event in week_view.events_by_day[day.key] %}
+                        <div class="event-block admin-event"
+                            style="top: {{ event.top_pct }}%; height: {{ event.height_pct }}%;"
+                            title="{{ event.title }} ({{ event.time_label }})">
+                            <div class="event-title">{{ event.subject or event.title }}</div>
+                            <div class="event-meta">
+                                {% if event.class %}<span><i class="fa-solid fa-users"></i> {{ event.class }}</span>{%
+                                endif %}
+                                {% if event.room %}<span><i class="fa-solid fa-location-dot"></i> {{ event.room
+                                    }}</span>{% endif %}
+                                <span><i class="fa-regular fa-clock"></i> {{ event.time_label }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- Extra events (unknown day) -->
+        {% if week_view.extra_events %}
+        <div style="padding: 1rem; border-top: 1px solid var(--border-color); background: #fff7ed;">
+            <h4 style="color: #c2410c; margin-bottom: 0.5rem;"><i class="fa-solid fa-triangle-exclamation"></i> Buổi
+                chưa rõ thứ</h4>
+            <ul style="list-style: none; padding: 0;">
+                {% for event in week_view.extra_events %}
+                <li style="padding: 0.5rem 0; border-bottom: 1px dashed #fdba74;">
+                    <strong>{{ event.title }}</strong> - {{ event.time_label }} ({{ event.class }})
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- List View -->
+<div class="card">
+    <div class="card-header">Danh sách chi tiết (Tuần này)</div>
+    <div class="card-body">
+        {% if not schedule_items %}
+        <div class="empty-state">Chưa có lịch nào trong tuần này.</div>
+        {% else %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Lớp</th>
+                        <th>Môn</th>
+                        <th>Thời gian</th>
+                        <th>Phòng</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in schedule_items %}
+                    <tr>
+                        <td>{{ item.tieu_de }}</td>
+                        <td><span class="badge">{{ item.lop }}</span></td>
+                        <td>{{ item.mon_hoc.ten_mh if item.mon_hoc else (item.ma_mh or '-') }}</td>
+                        <td>
+                            {% if item.ngay_hoc %}
+                            <span style="font-weight: 500; color: var(--primary-color);">{{
+                                item.ngay_hoc.strftime('%d/%m/%Y') }}</span>
+                            {% else %}
+                            {{ item.thu_trong_tuan }}
+                            {% endif %}
+                            <br>
+                            <small style="color: var(--muted-text);">{{ item.gio_bat_dau }} - {{ item.gio_ket_thuc
+                                }}</small>
+                        </td>
+                        <td>{{ item.phong or '-' }}</td>
+                        <td>
+                            {% if current_user.has_role('ADMIN') %}
+                            <form method="post" action="{{ url_for('admin_delete_schedule', schedule_id=item.id) }}"
+                                onsubmit="return confirm('Xóa lịch này?');" style="margin: 0;">
+                                <button class="btn btn-secondary btn-sm danger" type="submit" title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Modal Logic
+    var modal = document.getElementById("scheduleModal");
+    var btn = document.getElementById("openModalBtn");
+    var span = document.getElementsByClassName("close-modal")[0];
+
+    if (btn) {
+        btn.onclick = function () {
+            modal.classList.add("show");
+            modal.style.display = "flex";
+        }
+    }
+
+    if (span) {
+        span.onclick = function () {
+            modal.classList.remove("show");
+            modal.style.display = "none";
+        }
+    }
+
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.classList.remove("show");
+            modal.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

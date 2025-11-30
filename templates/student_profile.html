@@ -1,0 +1,89 @@
+{% extends "_layout.html" %}
+
+{% block title %}Thông tin cá nhân{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Thông tin cá nhân</div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+            <!-- Left Column: Avatar & Read-only Info -->
+            <div style="text-align: center;">
+                <div class="avatar-circle lg"
+                    style="margin: 0 auto 1rem auto; width: 120px; height: 120px; font-size: 3rem;">
+                    {{ sv.ho_ten[0] | upper }}
+                </div>
+                <h3 style="margin-bottom: 0.5rem;">{{ sv.ho_ten }}</h3>
+                <p style="color: var(--muted-text); margin-bottom: 1.5rem;">Sinh viên</p>
+
+                <div
+                    style="text-align: left; background: #f9fafb; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div style="margin-bottom: 0.75rem;">
+                        <small style="display: block; color: var(--muted-text); font-weight: 600;">Mã Sinh viên</small>
+                        <div style="font-weight: 500;">{{ sv.ma_sv }}</div>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <small style="display: block; color: var(--muted-text); font-weight: 600;">Lớp</small>
+                        <div style="font-weight: 500;">{{ sv.lop }}</div>
+                    </div>
+                    <div>
+                        <small style="display: block; color: var(--muted-text); font-weight: 600;">Khoa</small>
+                        <div style="font-weight: 500;">{{ sv.khoa }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Edit Form -->
+            <div>
+                <form method="POST" action="{{ url_for('student_profile') }}" class="form-grid two">
+                    <div style="grid-column: 1/-1;">
+                        <h4
+                            style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Thông tin cơ bản</h4>
+                    </div>
+
+                    <div style="grid-column: 1/-1;">
+                        <label for="ho_ten">Họ và tên <span style="color: red;">*</span></label>
+                        <input type="text" name="ho_ten" id="ho_ten" value="{{ sv.ho_ten or '' }}" required>
+                    </div>
+
+                    <div>
+                        <label for="ngay_sinh">Ngày sinh <span style="color: red;">*</span></label>
+                        <input type="date" name="ngay_sinh" id="ngay_sinh"
+                            value="{{ sv.ngay_sinh.strftime('%Y-%m-%d') if sv.ngay_sinh else '' }}" required>
+                    </div>
+
+                    <div>
+                        <label for="email">Email</label>
+                        <input type="email" name="email" id="email" value="{{ sv.email or '' }}"
+                            placeholder="email@example.com">
+                    </div>
+
+                    <div style="grid-column: 1/-1;">
+                        <label for="location">Địa chỉ</label>
+                        <input type="text" name="location" id="location" value="{{ sv.location or '' }}"
+                            placeholder="Nhập địa chỉ của bạn...">
+                    </div>
+
+                    <div style="grid-column: 1/-1; margin-top: 1rem;">
+                        <h4
+                            style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            Bảo mật</h4>
+                    </div>
+
+                    <div style="grid-column: 1/-1;">
+                        <label for="new_password">Đổi mật khẩu (Để trống nếu không đổi)</label>
+                        <input type="password" name="new_password" id="new_password" placeholder="Nhập mật khẩu mới...">
+                    </div>
+
+                    <div class="form-actions" style="grid-column: 1/-1; justify-content: flex-end; margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-save"></i> Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

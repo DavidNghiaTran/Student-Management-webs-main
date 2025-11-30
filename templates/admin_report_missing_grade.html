@@ -1,0 +1,124 @@
+{% extends "_layout.html" %}
+
+{% block title %}Theo dõi tiến độ nhập điểm{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ url_for('admin_reports_index') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <span>Theo dõi tiến độ nhập điểm</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin_report_missing_grade') }}" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <label for="ma_mh" style="margin-bottom: 0; font-weight: 500;">Chọn Môn học:</label>
+                <select name="ma_mh" id="ma_mh" required onchange="this.form.submit()" class="form-control"
+                    style="width: 300px; display: inline-block;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for mh in danh_sach_mon_hoc %}
+                    <option value="{{ mh.ma_mh }}" {% if selected_mon_hoc and selected_mon_hoc.ma_mh==mh.ma_mh
+                        %}selected{% endif %}>
+                        {{ mh.ten_mh }} ({{ mh.ma_mh }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        {% if selected_mon_hoc %}
+        <hr>
+
+        <!-- Summary Section -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Tổng số sinh viên</h6>
+                        <h3>{{ stats.total_students }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="text-success">Đã hoàn thành</h6>
+                        <h3 class="text-success">{{ stats.completed }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="text-danger">Chưa hoàn thành</h6>
+                        <h3 class="text-danger">{{ stats.incomplete }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="text-primary">Tỷ lệ hoàn thành</h6>
+                        <h3 class="text-primary">{{ stats.completion_rate }}%</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress mb-4" style="height: 25px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ stats.completion_rate }}%;"
+                aria-valuenow="{{ stats.completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                {{ stats.completion_rate }}%
+            </div>
+        </div>
+
+        <!-- Detailed List -->
+        <h5 class="mb-3">Danh sách sinh viên thiếu điểm</h5>
+        {% if results %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th style="width: 120px;">Mã SV</th>
+                        <th>Họ tên</th>
+                        <th style="width: 100px;">Lớp</th>
+                        <th>Các điểm còn thiếu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sv in results %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ sv.ma_sv }}</td>
+                        <td>{{ sv.ho_ten }}</td>
+                        <td>{{ sv.lop }}</td>
+                        <td>
+                            {% for item in sv.missing %}
+                            <span class="badge badge-warning" style="margin-right: 5px;">{{ item }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-check-circle"
+                style="font-size: 48px; color: var(--success-color); margin-bottom: 1rem;"></i>
+            <p>Tuyệt vời! Tất cả sinh viên đã có đủ điểm.</p>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fa-solid fa-info-circle"></i> Vui lòng chọn một môn học để xem tiến độ nhập điểm.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

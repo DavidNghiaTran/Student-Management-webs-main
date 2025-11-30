@@ -1,0 +1,36 @@
+{% extends "_layout.html" %}
+
+{% block title %}Lịch sử Hoạt động{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Lịch sử Hoạt động (Audit Log)</div>
+    <div class="card-body">
+        <p class="text-muted">Hiển thị 100 hoạt động gần nhất.</p>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Thời gian</th>
+                    <th>Người dùng</th>
+                    <th>Hành động</th>
+                    <th>Chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="white-space:nowrap;">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ log.user_id }}</td>
+                    <td><span class="badge badge-info">{{ log.action }}</span></td>
+                    <td style="font-family:monospace; font-size: 0.9em;">{{ log.details }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Chưa có hoạt động nào được ghi lại.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

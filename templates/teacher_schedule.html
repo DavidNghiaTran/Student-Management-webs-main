@@ -1,0 +1,427 @@
+{% extends "_layout.html" %}
+
+{% block title %}Lịch giảng dạy{% endblock %}
+
+{% block styles %}
+<style>
+    .schedule-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        height: 100%;
+    }
+
+    .schedule-header-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.25rem 1.5rem;
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .week-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .week-subtitle {
+        font-size: 0.9rem;
+        color: var(--muted-text);
+    }
+
+    .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f8fafc;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .filter-select {
+        border: none;
+        background: transparent;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        font-weight: 500;
+        outline: none;
+        cursor: pointer;
+        min-width: 100px;
+    }
+
+    .nav-group {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: #f1f5f9;
+        padding: 0.25rem;
+        border-radius: var(--radius-md);
+    }
+
+    .nav-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: white;
+        border-radius: 4px;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        text-decoration: none;
+    }
+
+    .nav-btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .nav-btn.today {
+        width: auto;
+        padding: 0 0.75rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .schedule-grid-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Grid Styles */
+    .week-grid {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .week-grid-header {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        background: #f8fafc;
+    }
+
+    .time-head {
+        width: 60px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border-color);
+        padding: 1rem 0.5rem;
+        text-align: center;
+        font-weight: 600;
+        color: var(--muted-text);
+        font-size: 0.85rem;
+        background: #f8fafc;
+    }
+
+    .day-head {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem;
+        border-right: 1px solid var(--border-color);
+        min-width: 120px;
+    }
+
+    .day-head:last-child {
+        border-right: none;
+    }
+
+    .day-head.weekend {
+        background: #fef2f2;
+    }
+
+    .day-name {
+        display: block;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .day-date {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .week-grid-body {
+        display: flex;
+        flex: 1;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .time-col {
+        width: 60px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border-color);
+        background: #fff;
+    }
+
+    .time-cell {
+        height: 60px;
+        /* Base height for 1 hour */
+        border-bottom: 1px solid #f1f5f9;
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--muted-text);
+        padding-top: 0.5rem;
+        position: relative;
+        top: -10px;
+        /* Align label with line */
+    }
+
+    .day-col {
+        flex: 1;
+        border-right: 1px solid var(--border-color);
+        position: relative;
+        min-width: 120px;
+        background: white;
+    }
+
+    .day-col:last-child {
+        border-right: none;
+    }
+
+    .day-col.weekend {
+        background: #fffafa;
+    }
+
+    .hour-grid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+    }
+
+    .hour-row {
+        height: 60px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* Event Block */
+    .event-block {
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .event-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 20;
+    }
+
+    .event-block.admin-event {
+        background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+        border-left: 4px solid #0ea5e9;
+        color: #0c4a6e;
+    }
+
+    .event-title {
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 0.1rem;
+    }
+
+    .event-meta {
+        font-size: 0.75rem;
+        color: #0369a1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .event-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        color: var(--muted-text);
+        height: 100%;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="schedule-container">
+    <!-- Header Controls -->
+    <div class="schedule-header-card">
+        <div class="header-left">
+            <div class="week-title">
+                <i class="fa-regular fa-calendar-check" style="color: var(--primary-color);"></i>
+                Lịch giảng dạy
+            </div>
+            <div class="week-subtitle">
+                Tuần {{ current_week_start.strftime('%W') }}: {{ current_week_start.strftime('%d/%m') }} - {{
+                current_week_end.strftime('%d/%m/%Y') }}
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <!-- Filter -->
+            <form method="get" id="filterForm" style="margin: 0;">
+                <input type="hidden" name="week_start" value="{{ current_week_start.strftime('%Y-%m-%d') }}">
+                <div class="filter-group">
+                    <i class="fa-solid fa-filter" style="color: var(--muted-text); font-size: 0.8rem;"></i>
+                    <select name="lop" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="">Tất cả lớp</option>
+                        {% for lop in danh_sach_lop %}
+                        <option value="{{ lop }}" {% if lop==filter_lop %}selected{% endif %}>{{ lop }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+            <!-- Navigation -->
+            <div class="nav-group">
+                <a href="{{ url_for('teacher_schedule', week_start=prev_week_start.strftime('%Y-%m-%d'), lop=filter_lop) }}"
+                    class="nav-btn" title="Tuần trước">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                <a href="{{ url_for('teacher_schedule', lop=filter_lop) }}" class="nav-btn today"
+                    title="Về tuần hiện tại">
+                    Hôm nay
+                </a>
+                <a href="{{ url_for('teacher_schedule', week_start=next_week_start.strftime('%Y-%m-%d'), lop=filter_lop) }}"
+                    class="nav-btn" title="Tuần sau">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Grid -->
+    <div class="schedule-grid-card">
+        {% if not week_view.has_events %}
+        <div class="empty-state">
+            <i class="fa-regular fa-calendar-xmark"></i>
+            <p>Bạn không có lịch giảng dạy nào trong tuần này.</p>
+            {% if filter_lop %}
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">(Đang lọc theo lớp: <strong>{{ filter_lop }}</strong>)</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="week-grid">
+            <div class="week-grid-header">
+                <div class="time-head">Giờ</div>
+                {% for day in week_view.days %}
+                <div class="day-head {% if day.key == 'sun' %}weekend{% endif %}">
+                    <span class="day-name">{{ day.label }}</span>
+                    <span class="day-date">{{ week_view.day_dates[day.key] or '' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="week-grid-body">
+                <div class="time-col">
+                    {% for slot in week_view.time_slots %}
+                    <div class="time-cell">{{ slot.label }}</div>
+                    {% endfor %}
+                </div>
+                {% for day in week_view.days %}
+                <div class="day-col {% if day.key == 'sun' %}weekend{% endif %}">
+                    <div class="hour-grid">
+                        {% for slot in week_view.time_slots %}
+                        <div class="hour-row"></div>
+                        {% endfor %}
+                    </div>
+                    {% for event in week_view.events_by_day[day.key] %}
+                    <div class="event-block admin-event"
+                        style="top: {{ event.top_pct }}%; height: {{ event.height_pct }}%;"
+                        title="{{ event.title }} ({{ event.time_label }})">
+                        <div class="event-title">{{ event.subject or event.title }}</div>
+                        <div class="event-meta">
+                            {% if event.class %}<span><i class="fa-solid fa-users"></i> {{ event.class }}</span>{% endif
+                            %}
+                            {% if event.room %}<span><i class="fa-solid fa-location-dot"></i> {{ event.room }}</span>{%
+                            endif %}
+                            <span><i class="fa-regular fa-clock"></i> {{ event.time_label }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Extra Events -->
+    {% if week_view.extra_events %}
+    <div class="card" style="border-left: 4px solid #f97316;">
+        <div class="card-body">
+            <h4 style="color: #c2410c; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Buổi chưa rõ thứ
+            </h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for event in week_view.extra_events %}
+                <li style="padding: 0.5rem 0; border-bottom: 1px dashed #fdba74; display: flex; gap: 1rem;">
+                    <strong>{{ event.title }}</strong>
+                    <span style="color: var(--muted-text);">{{ event.time_label }}</span>
+                    <span class="badge badge-info">{{ event.class }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "_layout.html" %}
+
+{% block title %}Truy vấn điểm tùy chỉnh{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ url_for('admin_reports_index') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <span>Truy vấn điểm tùy chỉnh</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post" class="form-grid four">
+            <div>
+                <label>Môn học</label>
+                <select name="ma_mh" required>
+                    <option value="">-- Chọn môn học --</option>
+                    {% for mh in danh_sach_mon_hoc %}
+                    <option value="{{ mh.ma_mh }}" {% if selected_mh_id==mh.ma_mh %}selected{% endif %}>
+                        {{ mh.ma_mh }} - {{ mh.ten_mh }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Loại điểm</label>
+                <select name="score_type" id="scoreType" required>
+                    <option value="10" {% if score_type=='10' %}selected{% endif %}>Điểm hệ 10</option>
+                    <option value="4" {% if score_type=='4' %}selected{% endif %}>Điểm hệ 4</option>
+                </select>
+            </div>
+            <div>
+                <label>Điều kiện</label>
+                <select name="operator" required>
+                    <option value="gt" {% if operator=='gt' %}selected{% endif %}>Lớn hơn (>)</option>
+                    <option value="gte" {% if operator=='gte' %}selected{% endif %}>Lớn hơn hoặc bằng (>=)</option>
+                    <option value="lt" {% if operator=='lt' %}selected{% endif %}>Nhỏ hơn (<)< /option>
+                    <option value="lte" {% if operator=='lte' %}selected{% endif %}>Nhỏ hơn hoặc bằng (<=)< /option>
+                    <option value="eq" {% if operator=='eq' %}selected{% endif %}>Bằng (=)</option>
+                </select>
+            </div>
+            <div>
+                <label>Giá trị so sánh</label>
+                <input type="text" name="value" id="valueInput" value="{{ value or '' }}" required
+                    placeholder="Nhập điểm..." />
+            </div>
+            <div style="grid-column: 1/-1; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if results is not none %}
+<div class="card">
+    <div class="card-header">
+        Kết quả tìm kiếm ({{ results|length }} sinh viên)
+    </div>
+    <div class="card-body">
+        {% if results %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã SV</th>
+                        <th>Họ tên</th>
+                        <th>Lớp</th>
+                        <th>Điểm hệ 10</th>
+                        <th>Điểm hệ 4</th>
+                        <th>Điểm chữ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results %}
+                    <tr>
+                        <td>{{ row.ma_sv }}</td>
+                        <td>{{ row.ho_ten }}</td>
+                        <td>{{ row.lop }}</td>
+                        <td style="font-weight: bold; color: var(--primary-color);">{{ row.diem_tong_ket }}</td>
+                        <td>{{ row.diem_tong_ket_4 }}</td>
+                        <td><span class="badge badge-info">{{ row.diem_chu }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">Không tìm thấy sinh viên nào thỏa mãn điều kiện.</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

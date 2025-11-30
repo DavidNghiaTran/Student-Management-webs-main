@@ -1,0 +1,210 @@
+{% extends "_layout.html" %}
+
+{% block title %}Đăng nhập - Hệ thống QLSV{% endblock %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .app-shell {
+        /* Override app-shell for login page to center content */
+        display: block;
+        min-height: auto;
+    }
+
+    .app-header,
+    .app-footer,
+    .sidebar-right {
+        display: none !important;
+        /* Hide standard layout elements */
+    }
+
+    .app-container {
+        padding: 0;
+        max-width: 100%;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .login-wrapper {
+        width: 100%;
+        max-width: 420px;
+        padding: 2rem;
+    }
+
+    .login-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .login-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+        object-fit: contain;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+        color: var(--muted-text);
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+
+    .login-form {
+        text-align: left;
+    }
+
+    .input-group {
+        margin-bottom: 1.25rem;
+        position: relative;
+    }
+
+    .input-group i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted-text);
+        pointer-events: none;
+    }
+
+    .input-group input {
+        padding-left: 2.75rem;
+        /* Space for icon */
+        height: 48px;
+        font-size: 1rem;
+    }
+
+    .input-group input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-login {
+        width: 100%;
+        height: 48px;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-top: 1rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-login:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+    }
+
+    .login-footer {
+        margin-top: 2rem;
+        font-size: 0.85rem;
+        color: var(--muted-text);
+    }
+
+    .login-footer a {
+        color: var(--primary-color);
+        font-weight: 500;
+    }
+
+    .notification-banner {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: var(--radius-md);
+        color: #0369a1;
+        font-size: 0.875rem;
+        text-align: left;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .notification-banner i {
+        margin-top: 3px;
+        color: #0284c7;
+    }
+
+    /* Flash messages in login context */
+    .flash {
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <img src="{{ url_for('static', filename='Logo.png') }}" alt="Logo" class="login-logo">
+        <h1 class="login-title">Đăng nhập</h1>
+        <p class="login-subtitle">Hệ thống Quản lý Sinh viên & Điểm thi</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            <i class="fa-solid fa-circle-info"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <label for="username" class="sr-only">Tên đăng nhập</label>
+                <input type="text" name="username" id="username" placeholder="Mã SV / Mã GV" required
+                    autocomplete="username">
+            </div>
+
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <label for="password" class="sr-only">Mật khẩu</label>
+                <input type="password" name="password" id="password" placeholder="Mật khẩu" required
+                    autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-login">
+                Đăng nhập
+            </button>
+        </form>
+
+        <div class="notification-banner">
+            <i class="fa-solid fa-bullhorn"></i>
+            <div>
+                <strong>Lưu ý:</strong><br>
+                Vui lòng sử dụng tài khoản được cấp từ Học viện.
+            </div>
+        </div>
+
+        <div class="login-footer">
+            <p>&copy; 2025 Nhóm 12.07 - CSDL</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

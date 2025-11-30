@@ -1,0 +1,293 @@
+{% extends "_layout.html" %}
+
+{% block title %}Nhập/Sửa điểm{% endblock %}
+
+{% block styles %}
+<style>
+    /* Sticky Action Bar */
+    .sticky-action-bar {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: white;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        /* Negative margin to stretch full width of card */
+    }
+
+    .page-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f1f5f9;
+        border-radius: var(--radius-full);
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .info-badge i {
+        color: var(--primary-color);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-color);
+        border-color: #cbd5e1;
+    }
+
+    .helper-text {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-radius: var(--radius-md);
+        color: #92400e;
+        font-size: 0.95rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    .helper-text i {
+        margin-top: 0.2rem;
+    }
+
+    /* Table Styles with Frozen Columns */
+    .table-container {
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        max-height: calc(100vh - 250px);
+        /* Max height for vertical scrolling */
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        /* Required for sticky headers/columns */
+        border-spacing: 0;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+        background: white;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: var(--muted-text);
+        text-align: center;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 1px 0 var(--border-color);
+        /* Bottom border for sticky header */
+    }
+
+    /* Frozen First Two Columns */
+    .data-table th:nth-child(1),
+    .data-table td:nth-child(1) {
+        position: sticky;
+        left: 0;
+        z-index: 20;
+        width: 100px;
+        border-right: 2px solid var(--border-color);
+    }
+
+    .data-table th:nth-child(2),
+    .data-table td:nth-child(2) {
+        position: sticky;
+        left: 100px;
+        /* Width of first column + padding/borders roughly */
+        z-index: 20;
+        width: 180px;
+        border-right: 2px solid var(--border-color);
+    }
+
+    /* Ensure header cells for frozen columns are on top of everything */
+    .data-table thead tr:first-child th:nth-child(1),
+    .data-table thead tr:first-child th:nth-child(2) {
+        z-index: 30;
+    }
+
+    /* Specific z-index for the second row of headers if applicable */
+    .data-table thead tr:nth-child(2) th {
+        top: 40px;
+        /* Adjust based on height of first header row */
+    }
+
+    .grade-input {
+        width: 60px;
+        padding: 0.4rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .grade-input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .grade-result {
+        font-weight: 700;
+        color: var(--text-color);
+    }
+
+    .grade-result.highlight {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="overflow: visible;"> <!-- Allow sticky header to be visible -->
+    <form method="POST" action="{{ url_for('admin_save_grades') }}">
+        <input type="hidden" name="lop" value="{{ lop }}">
+        <input type="hidden" name="ma_mh" value="{{ mon_hoc.ma_mh }}">
+
+        <!-- Sticky Action Bar -->
+        <div class="sticky-action-bar">
+            <div class="page-info">
+                <a href="{{ url_for('admin_manage_grades', lop=lop, ma_mh=mon_hoc.ma_mh) }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </a>
+                <div class="info-badge">
+                    <i class="fa-solid fa-layer-group"></i> {{ lop }}
+                </div>
+                <div class="info-badge">
+                    <i class="fa-solid fa-book-open"></i> {{ mon_hoc.ten_mh }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu tất cả thay đổi
+            </button>
+        </div>
+
+        <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+            <div class="helper-text">
+                <i class="fa-solid fa-circle-info"></i>
+                <div>
+                    <strong>Hướng dẫn:</strong> Nhập điểm thành phần (thang 10). Điểm tổng kết & điểm chữ sẽ tự động
+                    tính khi đủ 3 cột điểm. Bỏ trống nếu chưa có điểm.
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="min-width: 100px;">Mã SV</th>
+                            <th rowspan="2" style="min-width: 180px;">Họ và Tên</th>
+                            <th colspan="5">Điểm thành phần (Nhập)</th>
+                            <th colspan="3">Kết quả (Tự động)</th>
+                        </tr>
+                        <tr>
+                            <th>CC ({{ mon_hoc.percent_cc }}%)</th>
+                            <th>BT ({{ mon_hoc.percent_bt }}%)</th>
+                            <th>KT ({{ mon_hoc.percent_kt }}%)</th>
+                            <th>TH ({{ mon_hoc.percent_th }}%)</th>
+                            <th>Thi ({{ mon_hoc.percent_thi }}%)</th>
+                            <th>Tổng (10)</th>
+                            <th>Hệ 4</th>
+                            <th>Chữ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sv in danh_sach_nhap_diem %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ sv.ma_sv }}</td>
+                            <td>{{ sv.ho_ten }}</td>
+                            <td style="text-align: center;">
+                                <input type="number" name="diem_cc_{{ sv.ma_sv }}"
+                                    value="{{ sv.diem_cc if sv.diem_cc is not none else '' }}" min="0" max="10"
+                                    step="any" class="grade-input">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" name="diem_bt_{{ sv.ma_sv }}"
+                                    value="{{ sv.diem_bt if sv.diem_bt is not none else '' }}" min="0" max="10"
+                                    step="any" class="grade-input">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" name="diem_kt_{{ sv.ma_sv }}"
+                                    value="{{ sv.diem_kt if sv.diem_kt is not none else '' }}" min="0" max="10"
+                                    step="any" class="grade-input">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" name="diem_th_{{ sv.ma_sv }}"
+                                    value="{{ sv.diem_th if sv.diem_th is not none else '' }}" min="0" max="10"
+                                    step="any" class="grade-input">
+                            </td>
+                            <td style="text-align: center;">
+                                <input type="number" name="diem_thi_{{ sv.ma_sv }}"
+                                    value="{{ sv.diem_thi if sv.diem_thi is not none else '' }}" min="0" max="10"
+                                    step="any" class="grade-input">
+                            </td>
+                            <td style="text-align: center;" class="grade-result highlight">
+                                {{ "%.2f"|format(sv.diem_tk) if sv.diem_tk is not none else '-' }}
+                            </td>
+                            <td style="text-align: center;" class="grade-result">
+                                {{ "%.2f"|format(sv.diem_tk_4) if sv.diem_tk_4 is not none else '-' }}
+                            </td>
+                            <td style="text-align: center;" class="grade-result">
+                                {{ sv.diem_chu if sv.diem_chu else '-' }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

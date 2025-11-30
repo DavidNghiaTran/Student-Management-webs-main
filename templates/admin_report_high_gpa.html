@@ -1,0 +1,113 @@
+{% extends "_layout.html" %}
+
+{% block title %}Báo cáo: GPA hệ 4 > {{ threshold }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{{ url_for('admin_reports_index') }}"
+            style="text-decoration: none; color: var(--primary-color); float: right; font-size: 0.9em;">&laquo; Quay lại
+            Danh sách Báo cáo</a>
+        Báo cáo: Danh sách sinh viên có GPA (hệ 4) > {{ threshold }}
+    </div>
+    <div class="card-body">
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Mã SV</th>
+                    <th>Họ tên</th>
+                    <th>Lớp</th>
+                    <th>GPA (Hệ 4)</th>
+                    <th>GPA (Hệ 10)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ row.ma_sv }}</td>
+                    <td>{{ row.ho_ten }}</td>
+                    <td>{{ row.lop }}</td>
+                    <td><strong>{{ "%.2f"|format(row.gpa_4) }}</strong></td>
+                    <td><strong>{{ "%.2f"|format(row.gpa_10) }}</strong></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">Không tìm thấy sinh viên nào có GPA (hệ 4) > {{ threshold }}.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr style="margin: 30px 0;">
+        <h3>Biểu đồ Phân loại Sinh viên (Trong danh sách trên)</h3>
+        <div style="max-width: 450px; margin: 20px auto 0 auto;">
+            <canvas id="gpaDistributionChart"></canvas>
+        </div>
+
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Lấy dữ liệu phân loại từ app.py
+            const labels = {{ chart_labels | tojson | safe
+        }};
+        const data = {{ chart_data | tojson | safe }};
+
+        // Lấy thẻ canvas
+        const ctx = document.getElementById('gpaDistributionChart').getContext('2d');
+
+        // Tạo biểu đồ tròn (Pie Chart)
+        new Chart(ctx, {
+            type: 'pie', // Loại: Biểu đồ tròn
+            data: {
+                labels: labels, // Nhãn: Xuất sắc, Giỏi, Khá...
+                datasets: [{
+                    label: 'Số lượng SV',
+                    data: data, // Dữ liệu: Số lượng sinh viên từng loại
+                    backgroundColor: [ // Mảng màu cho từng phần
+                        'rgba(40, 167, 69, 0.8)',  // Xuất sắc (Green)
+                        'rgba(0, 123, 255, 0.8)',  // Giỏi (Blue)
+                        'rgba(255, 193, 7, 0.8)',   // Khá (Yellow)
+                        'rgba(253, 126, 20, 0.8)', // Trung bình (Orange)
+                        'rgba(220, 53, 69, 0.8)'   // Yếu (Red)
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(0, 123, 255, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(253, 126, 20, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true, // Giữ tỷ lệ tròn
+                plugins: {
+                    legend: {
+                        position: 'top', // Hiển thị chú thích ở trên
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                // Hiển thị dạng "Giỏi: 5 (20%)"
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                const value = context.parsed;
+                                const sum = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = sum > 0 ? ((value / sum) * 100).toFixed(1) + '%' : '0%';
+                                label += `${value} (${percentage})`;
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+});
+    </script>
+    {% endblock %}

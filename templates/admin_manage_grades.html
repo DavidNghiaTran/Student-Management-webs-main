@@ -1,0 +1,329 @@
+{% extends "_layout.html" %}
+
+{% block title %}Quản lý Điểm thi{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .filter-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.25rem;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
+    .form-control {
+        padding: 0.625rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-color);
+        border-color: #cbd5e1;
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+    }
+
+    .btn-info {
+        background: #0ea5e9;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #0284c7;
+    }
+
+    .table-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .table-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        background: #f8fafc;
+    }
+
+    .table-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted-text);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .data-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .grade-cell {
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .grade-total {
+        text-align: center;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: var(--muted-text);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <i class="fa-solid fa-graduation-cap" style="color: var(--primary-color);"></i>
+        Quản lý Điểm thi
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('admin_import_grades') }}" class="btn btn-info">
+            <i class="fa-solid fa-file-excel"></i> Nhập Excel
+        </a>
+        <a href="{{ url_for('admin_export_grades') }}" class="btn btn-success">
+            <i class="fa-solid fa-file-export"></i> Xuất Excel
+        </a>
+    </div>
+</div>
+
+<div class="filter-card">
+    <form method="GET" action="{{ url_for('admin_manage_grades') }}">
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="lop" class="form-label">Chọn Lớp</label>
+                <select name="lop" id="lop" class="form-control" required>
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for lop in danh_sach_lop %}
+                    <option value="{{ lop }}" {% if lop==selected_lop %}selected{% endif %}>{{ lop }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ma_mh" class="form-label">Chọn Môn học</label>
+                <select name="ma_mh" id="ma_mh" class="form-control" required>
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for mh in danh_sach_mon_hoc %}
+                    <option value="{{ mh.ma_mh }}" {% if mh.ma_mh==selected_mh_id %}selected{% endif %}>
+                        {{ mh.ten_mh }} ({{ mh.ma_mh }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fa-solid fa-eye"></i> Xem Điểm
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if selected_lop and selected_mon_hoc %}
+<div class="table-card">
+    <div class="table-header">
+        <div class="table-title">
+            Bảng điểm: {{ selected_lop }} - {{ selected_mon_hoc.ten_mh }}
+        </div>
+        <div class="table-actions">
+            {% if current_user.has_role('ADMIN') %}
+            <a href="{{ url_for('admin_edit_course', ma_mh=selected_mh_id) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-sliders"></i> Cấu hình trọng số
+            </a>
+            {% endif %}
+            <a href="{{ url_for('admin_enter_grades', lop=selected_lop, ma_mh=selected_mh_id) }}"
+                class="btn btn-primary">
+                <i class="fa-solid fa-pen-to-square"></i> Nhập/Sửa điểm
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th>Mã SV</th>
+                    <th>Họ và Tên</th>
+                    <th class="grade-cell">CC</th>
+                    <th class="grade-cell">BT</th>
+                    <th class="grade-cell">KT</th>
+                    <th class="grade-cell">TH</th>
+                    <th class="grade-cell">Thi</th>
+                    <th class="grade-cell">Tổng (10)</th>
+                    <th class="grade-cell">Hệ 4</th>
+                    <th class="grade-cell">Chữ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for grade_row in grades_data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td style="font-weight: 500;">{{ grade_row.ma_sv }}</td>
+                    <td>{{ grade_row.ho_ten }}</td>
+                    <td class="grade-cell">{{ grade_row.diem_chuyen_can if grade_row.diem_chuyen_can is not none else
+                        '-' }}</td>
+                    <td class="grade-cell">{{ grade_row.diem_bai_tap if grade_row.diem_bai_tap is not none else '-' }}
+                    </td>
+                    <td class="grade-cell">{{ grade_row.diem_kiem_tra if grade_row.diem_kiem_tra is not none else '-' }}
+                    </td>
+                    <td class="grade-cell">{{ grade_row.diem_thuc_hanh if grade_row.diem_thuc_hanh is not none else '-'
+                        }}</td>
+                    <td class="grade-cell">{{ grade_row.diem_thi if grade_row.diem_thi is not none else '-' }}</td>
+                    <td class="grade-total">
+                        {{ "%.2f"|format(grade_row.diem_tong_ket) if grade_row.diem_tong_ket is not none else '-' }}
+                    </td>
+                    <td class="grade-cell" style="font-weight: 600;">
+                        {{ "%.2f"|format(grade_row.diem_tong_ket_4) if grade_row.diem_tong_ket_4 is not none else '-' }}
+                    </td>
+                    <td class="grade-cell" style="font-weight: 600;">
+                        {{ grade_row.diem_chu if grade_row.diem_chu else '-' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="11">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            <p>Chưa có dữ liệu điểm cho lớp và môn học này.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

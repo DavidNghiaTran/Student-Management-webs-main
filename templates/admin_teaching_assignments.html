@@ -1,0 +1,233 @@
+{% extends "_layout.html" %}
+
+{% block title %}Phân công Giảng dạy{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted-text);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <i class="fa-solid fa-chalkboard-user" style="color: var(--primary-color);"></i>
+        Phân công Giảng dạy
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-plus-circle"></i> Thêm phân công mới
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <input type="hidden" name="action" value="add">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Giáo viên</label>
+                    <select name="ma_gv" class="form-control" required>
+                        <option value="">-- Chọn giáo viên --</option>
+                        {% for gv in teachers %}
+                        <option value="{{ gv.ma_gv }}">{{ gv.ho_ten }} ({{ gv.ma_gv }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Môn học</label>
+                    <select name="ma_mh" class="form-control" required>
+                        <option value="">-- Chọn môn học --</option>
+                        {% for mh in subjects %}
+                        <option value="{{ mh.ma_mh }}">{{ mh.ten_mh }} ({{ mh.ma_mh }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Lớp</label>
+                    <select name="lop" class="form-control" required>
+                        <option value="">-- Chọn lớp --</option>
+                        {% for c in classes %}
+                        <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fa-solid fa-check"></i> Phân công
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-list"></i> Danh sách phân công
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Giáo viên</th>
+                        <th>Môn học</th>
+                        <th>Lớp</th>
+                        <th>Ngày tạo</th>
+                        <th style="text-align: right;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assignments %}
+                    <tr>
+                        <td>
+                            <strong>{{ a.giao_vien.giao_vien.ho_ten }}</strong><br>
+                            <span style="font-size: 0.9em; color: var(--muted-text);">{{ a.ma_gv }}</span>
+                        </td>
+                        <td>
+                            {{ a.mon_hoc.ten_mh }}<br>
+                            <span style="font-size: 0.9em; color: var(--muted-text);">{{ a.ma_mh }}</span>
+                        </td>
+                        <td><span class="badge"
+                                style="background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem; border-radius: 4px;">{{
+                                a.lop }}</span></td>
+                        <td>{{ a.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td style="text-align: right;">
+                            <form method="post" onsubmit="return confirm('Bạn có chắc muốn xóa phân công này?');"
+                                style="display: inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="assignment_id" value="{{ a.id }}">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--muted-text);">
+                            Chưa có phân công nào.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

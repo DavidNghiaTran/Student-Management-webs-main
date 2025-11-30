@@ -1,0 +1,184 @@
+{% extends "_layout.html" %}
+
+{% block title %}Xuất Bảng điểm Excel{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-sm);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .instruction-box {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: #0369a1;
+    }
+
+    .instruction-title {
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .instruction-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .form-actions {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-color);
+        border-color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <i class="fa-solid fa-file-excel" style="color: #10b981;"></i>
+        Xuất Bảng điểm ra Excel
+    </div>
+</div>
+
+<div class="card">
+    <div class="instruction-box">
+        <div class="instruction-title">
+            <i class="fa-solid fa-filter"></i> Tùy chọn xuất file
+        </div>
+        <p style="margin-bottom: 0.5rem;">Bạn có thể lọc dữ liệu xuất ra theo các tiêu chí sau:</p>
+        <ul class="instruction-list">
+            <li><b>Chỉ xuất theo Lớp:</b> Chọn Lớp cụ thể và để Môn học là "Tất cả".</li>
+            <li><b>Chỉ xuất theo Môn:</b> Chọn Môn học cụ thể và để Lớp là "Tất cả".</li>
+            <li><b>Xuất chi tiết:</b> Chọn cả Lớp và Môn học cụ thể.</li>
+            <li><b>Xuất toàn bộ:</b> Để cả hai là "Tất cả".</li>
+        </ul>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin_perform_export') }}">
+        <div class="form-group">
+            <label for="lop" class="form-label">Chọn Lớp:</label>
+            <select name="lop" id="lop" class="form-control" required>
+                <option value="all">-- Tất cả Lớp --</option>
+                {% for lop in danh_sach_lop %}
+                <option value="{{ lop }}">{{ lop }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="ma_mh" class="form-label">Chọn Môn học:</label>
+            <select name="ma_mh" id="ma_mh" class="form-control" required>
+                <option value="all">-- Tất cả Môn học --</option>
+                {% for mh in danh_sach_mon_hoc %}
+                <option value="{{ mh.ma_mh }}">{{ mh.ten_mh }} ({{ mh.ma_mh }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin_reports_index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại Báo cáo
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-file-export"></i> Xuất file Excel
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

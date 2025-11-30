@@ -1,0 +1,215 @@
+{% extends "_layout.html" %}
+
+{% block title %}Báo cáo & Thống kê{% endblock %}
+
+{% block styles %}
+<style>
+    .report-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: var(--primary-color);
+    }
+
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .report-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .report-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .report-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }
+
+    .report-desc {
+        font-size: 0.9rem;
+        color: var(--muted-text);
+        flex-grow: 1;
+    }
+
+    .report-action {
+        margin-top: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-chart-pie" style="margin-right: 8px;"></i>
+        Trung tâm Báo cáo & Thống kê
+    </div>
+    <div class="card-body">
+        <p class="text-muted" style="margin-bottom: 2rem;">
+            Tổng hợp các báo cáo quan trọng giúp theo dõi tình hình học tập và giảng dạy.
+        </p>
+
+        <!-- Section 1: Thống kê Học tập -->
+        <div class="report-section">
+            <div class="section-title">
+                <i class="fa-solid fa-chart-line"></i> Thống kê Học tập
+            </div>
+            <div class="reports-grid">
+                <!-- Sinh viên Xuất sắc -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #fef9c3; color: #ca8a04;">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="report-title">Sinh viên Xuất sắc</div>
+                    <div class="report-desc">
+                        Danh sách sinh viên có thành tích cao (GPA > 3.0). Dùng để xét học bổng.
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_report_high_gpa') }}" class="btn btn-secondary w-full">
+                            Xem danh sách <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Thống kê theo Lớp -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #dbeafe; color: #2563eb;">
+                        <i class="fa-solid fa-chart-column"></i>
+                    </div>
+                    <div class="report-title">Thống kê theo Lớp</div>
+                    <div class="report-desc">
+                        So sánh điểm trung bình (GPA) giữa các lớp để đánh giá chất lượng.
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_report_class_gpa') }}" class="btn btn-secondary w-full">
+                            Xem thống kê <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- Section 2: Cảnh báo & Theo dõi -->
+        <div class="report-section">
+            <div class="section-title">
+                <i class="fa-solid fa-triangle-exclamation"></i> Cảnh báo & Theo dõi
+            </div>
+            <div class="reports-grid">
+                <!-- Cảnh báo Học vụ -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #ffebee; color: #c62828;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="report-title">Cảnh báo Học vụ</div>
+                    <div class="report-desc">
+                        Sinh viên có nguy cơ (GPA thấp, nợ môn) cần được hỗ trợ.
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_report_warning') }}" class="btn btn-secondary w-full">
+                            Xem danh sách <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Sinh viên Chưa thi -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #fee2e2; color: #dc2626;">
+                        <i class="fa-solid fa-clipboard-question"></i>
+                    </div>
+                    <div class="report-title">Tiến độ Nhập điểm</div>
+                    <div class="report-desc">
+                        Theo dõi tiến độ nhập điểm và danh sách sinh viên còn thiếu các đầu điểm.
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_report_missing_grade') }}" class="btn btn-secondary w-full">
+                            Kiểm tra ngay <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Lịch sử Hoạt động -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #e0f2f1; color: #00695c;">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="report-title">Lịch sử Hoạt động</div>
+                    <div class="report-desc">
+                        Theo dõi các thay đổi quan trọng trong hệ thống (sửa điểm, cập nhật dữ liệu).
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_audit_log') }}" class="btn btn-secondary w-full">
+                            Xem lịch sử <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Công cụ -->
+        {% if current_user.has_role('ADMIN') %}
+        <div class="report-section" style="margin-bottom: 0;">
+            <div class="section-title">
+                <i class="fa-solid fa-toolbox"></i> Công cụ
+            </div>
+            <div class="reports-grid">
+                <!-- Truy vấn Tùy chỉnh -->
+                <div class="report-card">
+                    <div class="report-icon" style="background: #f3e5f5; color: #8e24aa;">
+                        <i class="fa-solid fa-filter"></i>
+                    </div>
+                    <div class="report-title">Truy vấn Tùy chỉnh</div>
+                    <div class="report-desc">
+                        Tìm kiếm sinh viên theo tiêu chí điểm số cụ thể (GPA, điểm môn học).
+                    </div>
+                    <div class="report-action">
+                        <a href="{{ url_for('admin_report_custom_query') }}" class="btn btn-secondary w-full">
+                            Truy vấn ngay <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

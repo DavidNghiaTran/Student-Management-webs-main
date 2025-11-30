@@ -1,0 +1,78 @@
+{% extends "_layout.html" %}
+
+{% block title %}Cảnh báo học vụ{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <a href="{{ url_for('admin_reports_index') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+            <span>Danh sách Cảnh báo Học vụ</span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Danh sách sinh viên có nguy cơ học vụ: <strong>GPA (hệ 4) < 2.0</strong> hoặc <strong>có môn bị điểm
+                        F</strong>.
+        </div>
+
+        {% if warning_list %}
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã SV</th>
+                        <th>Họ tên</th>
+                        <th>Lớp</th>
+                        <th>GPA (Hệ 4)</th>
+                        <th>Môn nợ (Điểm F)</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sv in warning_list %}
+                    <tr>
+                        <td>{{ sv.ma_sv }}</td>
+                        <td>{{ sv.ho_ten }}</td>
+                        <td>{{ sv.lop }}</td>
+                        <td>
+                            {% if sv.gpa_4 < 2.0 %} <span class="badge badge-danger">{{ sv.gpa_4 }}</span>
+                                {% else %}
+                                {{ sv.gpa_4 }}
+                                {% endif %}
+                        </td>
+                        <td>
+                            {% if sv.failed_subjects %}
+                            <ul style="margin: 0; padding-left: 20px; color: var(--danger-color);">
+                                {% for fail in sv.failed_subjects %}
+                                <li>{{ fail.ten_mh }} ({{ fail.diem }})</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <span class="text-muted">Không có</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sv.gpa_4 < 2.0 %} <span class="badge badge-danger">Nguy cơ buộc thôi học</span>
+                                {% elif sv.failed_subjects %}
+                                <span class="badge badge-warning">Cảnh báo học tập</span>
+                                {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-check-circle"
+                style="font-size: 48px; color: var(--success-color); margin-bottom: 1rem;"></i>
+            <p>Tuyệt vời! Không có sinh viên nào nằm trong diện cảnh báo.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

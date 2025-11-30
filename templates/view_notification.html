@@ -1,0 +1,57 @@
+{% extends "_layout.html" %}
+
+{% block title %}Chi tiết Thông báo{% endblock %}
+
+{% block styles %}
+<style>
+    .notification-detail-header {
+        border-bottom: 2px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .notification-detail-header h2 {
+        font-size: 1.8rem;
+        color: var(--primary-color);
+        margin-bottom: 10px;
+    }
+    .notification-detail-meta {
+        font-size: 0.95rem;
+        color: #555;
+    }
+    .notification-detail-meta strong {
+        color: #111;
+    }
+    .notification-detail-content {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-top: 20px;
+    }
+    /* Cho phép nội dung xuống dòng (nếu là plain text) */
+    .notification-detail-content {
+        white-space: pre-wrap; /* Giữ các ký tự xuống dòng */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+
+        <a href="{{ url_for('admin_dashboard') }}" style="text-decoration: none; color: #0275d8; margin-bottom: 15px; display: inline-block;">
+            &laquo; Quay lại Danh sách Thông báo
+        </a>
+
+        <div class="notification-detail-header">
+            <h2>{{ notification.tieu_de }}</h2>
+            <div class="notification-detail-meta">
+                <span>Gửi bởi: <strong>{{ sender_username }}</strong></span> |
+                <span>Ngày: <strong>{{ notification.ngay_gui.strftime('%d-%m-%Y %H:%M') }}</strong></span> |
+                <span>Đến lớp: <strong>{{ notification.lop_nhan }}</strong></span>
+            </div>
+        </div>
+
+        <div class="notification-detail-content">
+            {{ notification.noi_dung | safe }}
+        </div>
+
+    </div> </div> {% endblock %}

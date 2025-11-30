@@ -1,0 +1,173 @@
+{% extends "_layout.html" %}
+
+{% block title %}Báo cáo: GPA theo Lớp{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{{ url_for('admin_reports_index') }}"
+            style="text-decoration: none; color: var(--primary-color); float: right; font-size: 0.9em;">&laquo; Quay lại
+            Danh sách Báo cáo</a>
+        Báo cáo 3: Thống kê điểm trung bình (GPA) Lớp
+    </div>
+    <div class="card-body">
+
+        <form method="GET" action="{{ url_for('admin_report_class_gpa') }}">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <label for="lop" style="margin-bottom: 0;">Chọn Lớp:</label>
+                <select name="lop" id="lop" required onchange="this.form.submit()"
+                    style="width: 250px; margin-bottom: 0;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for lop in danh_sach_lop %}
+                    <option value="{{ lop }}" {% if selected_lop==lop %}selected{% endif %}>
+                        {{ lop }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <hr>
+
+        {% if selected_lop %}
+        <h3>Kết quả Thống kê cho Lớp: {{ selected_lop }}</h3>
+
+        <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
+            <div style="padding: 15px; background-color: #f4f4f4; border-radius: 8px;">
+                <h4 style="margin: 0 0 5px 0;">GPA TB (Hệ 10)</h4>
+                <strong style="font-size: 1.8em; color: #0275d8;">
+                    {{ "%.2f"|format(lop_gpa_10) if lop_gpa_10 is not none else 'N/A' }}
+                </strong>
+            </div>
+            <div style="padding: 15px; background-color: #f4f4f4; border-radius: 8px;">
+                <h4 style="margin: 0 0 5px 0;">GPA TB (Hệ 4)</h4>
+                <strong style="font-size: 1.8em; color: #5cb85c;">
+                    {{ "%.2f"|format(lop_gpa_4) if lop_gpa_4 is not none else 'N/A' }}
+                </strong>
+            </div>
+        </div>
+
+        {% if chart_labels %}
+        <hr style="margin: 30px 0;">
+
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <!-- Biểu đồ 1: Phân loại (Pie) -->
+            <div style="flex: 1; min-width: 300px;">
+                <h3>Phân bố Học lực Lớp {{ selected_lop }}</h3>
+                <div style="max-width: 350px; margin: 0 auto;">
+                    <canvas id="classificationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Biểu đồ 2: So sánh (Bar) -->
+            <div style="flex: 1; min-width: 300px;">
+                <h3>So sánh GPA với các lớp khác</h3>
+                <div style="width: 100%;">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <p style="margin-top: 20px;">Không có đủ dữ liệu để vẽ biểu đồ phân loại.</p>
+        {% endif %}
+        {% else %}
+        <p style="margin-top: 20px;">Vui lòng chọn một lớp để xem thống kê.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% if selected_lop and chart_labels %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Biểu đồ Phân loại (Pie Chart)
+        const labels = {{ chart_labels | tojson | safe
+    }};
+    const data = {{ chart_data | tojson | safe }};
+    const ctx = document.getElementById('classificationChart')?.getContext('2d');
+
+    if (ctx && data.length > 0) {
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượng SV',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.8)',   // Yếu
+                        'rgba(253, 126, 20, 0.8)', // Trung bình
+                        'rgba(255, 193, 7, 0.8)',   // Khá
+                        'rgba(0, 123, 255, 0.8)',  // Giỏi
+                        'rgba(40, 167, 69, 0.8)'   // Xuất sắc
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // 2. Biểu đồ So sánh (Bar Chart)
+    const compLabels = {{ comparison_labels | tojson | safe }};
+    const compData = {{ comparison_data | tojson | safe }};
+    const currentClass = "{{ selected_lop }}";
+    const ctxComp = document.getElementById('comparisonChart')?.getContext('2d');
+
+    if (ctxComp && compData.length > 0) {
+        // Tô màu khác biệt cho lớp hiện tại
+        const bgColors = compLabels.map(label =>
+            label === currentClass ? 'rgba(255, 99, 132, 0.8)' : 'rgba(54, 162, 235, 0.6)'
+        );
+        const borderColors = compLabels.map(label =>
+            label === currentClass ? 'rgba(255, 99, 132, 1)' : 'rgba(54, 162, 235, 1)'
+        );
+
+        new Chart(ctxComp, {
+            type: 'bar',
+            data: {
+                labels: compLabels,
+                datasets: [{
+                    label: 'GPA Trung bình (Hệ 4)',
+                    data: compData,
+                    backgroundColor: bgColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 4.0,
+                        title: { display: true, text: 'GPA (Hệ 4)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `GPA: ${context.parsed.y}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+
+{% endblock %}

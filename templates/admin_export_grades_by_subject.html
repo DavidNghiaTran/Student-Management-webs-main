@@ -1,0 +1,34 @@
+{% extends "_layout.html" %}
+
+{% block title %}Xuất Bảng điểm (Theo Môn){% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{{ url_for('admin_reports_index') }}" style="text-decoration: none; color: var(--primary-color); float: right; font-size: 0.9em;">&laquo; Quay lại Báo cáo</a>
+        Xuất Bảng điểm ra Excel (Theo Môn học)
+    </div>
+    <div class="card-body">
+        <p>
+            Vui lòng chọn Môn học. Hệ thống sẽ tạo một file Excel
+            chứa danh sách <strong>tất cả sinh viên</strong> (từ mọi lớp)
+            đã có điểm của môn học này.
+        </p>
+
+        <form method="POST" action="{{ url_for('admin_perform_export_by_subject') }}">
+            <div style="margin-bottom: 15px;">
+                <label for="ma_mh">Chọn Môn học:</label>
+                <select name="ma_mh" id="ma_mh" required style="width: 100%; max-width: 400px;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for mh in danh_sach_mon_hoc %}
+                        <option value="{{ mh.ma_mh }}">{{ mh.ten_mh }} ({{ mh.ma_mh }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="margin-top: 20px;">
+                <input type="submit" value="Xuất file Excel">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

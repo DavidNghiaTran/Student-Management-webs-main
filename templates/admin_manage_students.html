@@ -1,0 +1,352 @@
+{% extends "_layout.html" %}
+
+{% block title %}Quản lý Sinh viên{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .filter-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
+    .form-control {
+        padding: 0.625rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.25rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--bg-color);
+        border-color: #cbd5e1;
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #059669;
+    }
+
+    .btn-info {
+        background: #0ea5e9;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #0284c7;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .table-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted-text);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .data-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        color: var(--muted-text);
+        transition: all 0.2s;
+        background: transparent;
+        border: 1px solid transparent;
+    }
+
+    .btn-icon:hover {
+        background: #f1f5f9;
+        color: var(--primary-color);
+    }
+
+    .btn-icon.delete:hover {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: var(--muted-text);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Quản lý Sinh viên</h1>
+    <div class="header-actions">
+        <a href="{{ url_for('admin_add_student') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Thêm mới
+        </a>
+        {% if current_user.has_role('ADMIN') %}
+        <a href="{{ url_for('admin_import_students') }}" class="btn btn-success">
+            <i class="fa-solid fa-file-excel"></i> Nhập từ Excel
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="filter-card">
+    <form method="GET" action="{{ url_for('admin_manage_students') }}">
+        <div class="filter-grid">
+            <div class="form-group">
+                <label for="ma_sv" class="form-label">Mã Sinh viên</label>
+                <input type="text" name="ma_sv" id="ma_sv" class="form-control" value="{{ search_params.ma_sv }}"
+                    placeholder="Nhập mã SV...">
+            </div>
+            <div class="form-group">
+                <label for="ho_ten" class="form-label">Họ và Tên</label>
+                <input type="text" name="ho_ten" id="ho_ten" class="form-control" value="{{ search_params.ho_ten }}"
+                    placeholder="Nhập tên SV...">
+            </div>
+            <div class="form-group">
+                <label for="lop" class="form-label">Lớp</label>
+                <select name="lop" id="lop" class="form-control">
+                    <option value="">-- Tất cả --</option>
+                    {% for lop in danh_sach_lop %}
+                    <option value="{{ lop }}" {% if lop==search_params.lop %}selected{% endif %}>{{ lop }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="khoa" class="form-label">Khoa</label>
+                <select name="khoa" id="khoa" class="form-control">
+                    <option value="">-- Tất cả --</option>
+                    {% for khoa in danh_sach_khoa %}
+                    <option value="{{ khoa }}" {% if khoa==search_params.khoa %}selected{% endif %}>{{ khoa }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <a href="{{ url_for('admin_manage_students') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-rotate-left"></i> Đặt lại
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+            </button>
+            <a href="{{ url_for('admin_export_students_excel', 
+                            ma_sv=search_params.ma_sv, 
+                            ho_ten=search_params.ho_ten, 
+                            lop=search_params.lop, 
+                            khoa=search_params.khoa) }}" class="btn btn-success" style="margin-left: auto;">
+                <i class="fa-solid fa-file-export"></i> Xuất Excel
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã SV</th>
+                    <th>Họ và Tên</th>
+                    <th>Ngày sinh</th>
+                    <th>Lớp</th>
+                    <th>Khoa</th>
+                    <th>Email</th>
+                    <th>Địa chỉ</th>
+                    <th>Hệ ĐT</th>
+                    <th style="width: 100px; text-align: center;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sv in students %}
+                <tr>
+                    <td style="font-weight: 500;">{{ sv.ma_sv }}</td>
+                    <td>{{ sv.ho_ten }}</td>
+                    <td>{{ sv.ngay_sinh.strftime('%d/%m/%Y') if sv.ngay_sinh else '' }}</td>
+                    <td><span class="badge badge-info">{{ sv.lop }}</span></td>
+                    <td>{{ sv.khoa }}</td>
+                    <td>{{ sv.email or '' }}</td>
+                    <td>{{ sv.location or '' }}</td>
+                    <td>
+                        {% if sv.he_dao_tao == 'KY_SU' %}
+                        <span class="badge badge-success">Kỹ sư</span>
+                        {% else %}
+                        <span class="badge badge-primary">Cử nhân</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('admin_edit_student', ma_sv=sv.ma_sv) }}" class="btn-icon" title="Sửa">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_delete_student', ma_sv=sv.ma_sv) }}"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa sinh viên này?');"
+                                style="display:inline;">
+                                <button type="submit" class="btn-icon delete" title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <p>Không tìm thấy sinh viên nào phù hợp với điều kiện tìm kiếm.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

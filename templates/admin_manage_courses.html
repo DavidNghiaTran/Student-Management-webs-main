@@ -1,0 +1,280 @@
+{% extends "_layout.html" %}
+
+{% block title %}{% if current_user.has_role('ADMIN') %}Quản lý Môn học{% else %}Môn học giảng dạy{% endif %}{% endblock
+%}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    }
+
+    .card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted-text);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+        vertical-align: middle;
+    }
+
+    .data-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .weight-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .weight-item {
+        background: #f1f5f9;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .weight-label {
+        font-size: 0.75rem;
+        color: var(--muted-text);
+        display: block;
+        margin-bottom: 0.1rem;
+    }
+
+    .weight-value {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-md);
+        color: var(--muted-text);
+        transition: all 0.2s;
+        background: transparent;
+        border: 1px solid transparent;
+        text-decoration: none;
+    }
+
+    .btn-icon:hover {
+        background: #f1f5f9;
+        color: var(--primary-color);
+    }
+
+    .btn-icon.delete:hover {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: var(--muted-text);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>
+        {% if current_user.has_role('ADMIN') %}
+        <i class="fa-solid fa-book-open" style="color: var(--primary-color);"></i> Quản lý Môn học
+        {% else %}
+        <i class="fa-solid fa-book-reader" style="color: var(--primary-color);"></i> Môn học giảng dạy
+        {% endif %}
+    </h1>
+    {% if current_user.has_role('ADMIN') %}
+    <a href="{{ url_for('admin_add_course') }}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Thêm môn học
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã MH</th>
+                    <th>Tên Môn học</th>
+                    {% if current_user.has_role('ADMIN') %}
+                    <th style="text-align: center;">Học kỳ</th>
+                    {% else %}
+                    <th style="text-align: center;">Lớp</th>
+                    <th style="text-align: center;">Sĩ số</th>
+                    {% endif %}
+                    <th style="text-align: center;">Số TC</th>
+                    <th style="width: 350px;">Cấu trúc điểm (%)</th>
+                    {% if current_user.has_role('ADMIN') %}
+                    <th style="width: 100px; text-align: right;">Hành động</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td style="font-weight: 600; color: var(--primary-color);">{{ course.ma_mh }}</td>
+                    <td style="font-weight: 500;">{{ course.ten_mh }}</td>
+                    {% if current_user.has_role('ADMIN') %}
+                    <td style="text-align: center;">
+                        <span class="badge">{{ course.hoc_ky }}</span>
+                    </td>
+                    {% else %}
+                    <td style="text-align: center;">
+                        <span class="badge" style="background: #e0f2fe; color: #0369a1;">{{ course.lop }}</span>
+                    </td>
+                    <td style="text-align: center; font-weight: 600;">
+                        {{ course.student_count }}
+                    </td>
+                    {% endif %}
+                    <td style="text-align: center;">{{ course.so_tin_chi }}</td>
+                    <td>
+                        <div class="weight-grid">
+                            <div class="weight-item">
+                                <span class="weight-label">CC</span>
+                                <span class="weight-value">{{ course.percent_cc }}</span>
+                            </div>
+                            <div class="weight-item">
+                                <span class="weight-label">BT</span>
+                                <span class="weight-value">{{ course.percent_bt }}</span>
+                            </div>
+                            <div class="weight-item">
+                                <span class="weight-label">KT</span>
+                                <span class="weight-value">{{ course.percent_kt }}</span>
+                            </div>
+                            <div class="weight-item">
+                                <span class="weight-label">TH</span>
+                                <span class="weight-value">{{ course.percent_th }}</span>
+                            </div>
+                            <div class="weight-item">
+                                <span class="weight-label">Thi</span>
+                                <span class="weight-value">{{ course.percent_thi }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    {% if current_user.has_role('ADMIN') %}
+                    <td>
+                        <div class="action-buttons" style="justify-content: flex-end;">
+                            <a href="{{ url_for('admin_edit_course', ma_mh=course.ma_mh) }}" class="btn-icon"
+                                title="Sửa">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_delete_course', ma_mh=course.ma_mh) }}"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa môn học này?');" style="display:inline;">
+                                <button type="submit" class="btn-icon delete" title="Xóa">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                <tr>
+                    <td colspan="{% if current_user.has_role('ADMIN') %}6{% else %}5{% endif %}">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-book-open"></i>
+                            <p>Chưa có môn học nào trong hệ thống.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "_layout.html" %}
+
+{% block title %}Cập nhật Môn học{% endblock %}
+
+{% block content %}
+<h2>Cập nhật Môn học: {{ course.ten_mh }}</h2>
+<p>Lưu ý: Bạn không thể sửa Mã Môn học. </p>
+
+<form method="POST" action="{{ url_for('admin_edit_course', ma_mh=course.ma_mh) }}" onsubmit="return validateWeights()">
+    <p>
+        <label>Mã Môn học:</label>
+        <input type="text" name="ma_mh" value="{{ course.ma_mh }}" disabled>
+    </p>
+    <p>
+        <label>Tên Môn học:</label>
+        <input type="text" name="ten_mh" value="{{ course.ten_mh }}" required>
+    </p>
+    <p>
+        <label>Học kỳ (Số nguyên, ví dụ: 1, 2, 3):</label>
+        <input type="number" name="hoc_ky" value="{{ course.hoc_ky }}" min="1" required>
+    </p>
+    <p>
+        <label>Số tín chỉ:</label>
+        <input type="number" name="so_tin_chi" value="{{ course.so_tin_chi }}" min="1" required>
+    </p>
+
+    <fieldset style="border: 1px solid #ddd; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <legend style="font-weight: bold;">Cấu hình Trọng số Điểm (Tổng phải bằng 100%)</legend>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <div>
+                <label>Chuyên cần (%):</label>
+                <input type="number" name="percent_cc" id="percent_cc" value="{{ course.percent_cc }}" min="0" max="100"
+                    required style="width: 80px;">
+            </div>
+            <div>
+                <label>Bài tập (%):</label>
+                <input type="number" name="percent_bt" id="percent_bt" value="{{ course.percent_bt }}" min="0" max="100"
+                    required style="width: 80px;">
+            </div>
+            <div>
+                <label>Kiểm tra (%):</label>
+                <input type="number" name="percent_kt" id="percent_kt" value="{{ course.percent_kt }}" min="0" max="100"
+                    required style="width: 80px;">
+            </div>
+            <div>
+                <label>Thực hành (%):</label>
+                <input type="number" name="percent_th" id="percent_th" value="{{ course.percent_th }}" min="0" max="100"
+                    required style="width: 80px;">
+            </div>
+            <div>
+                <label>Thi Cuối kỳ (%):</label>
+                <input type="number" name="percent_thi" id="percent_thi" value="{{ course.percent_thi }}" min="0"
+                    max="100" required style="width: 80px;">
+            </div>
+        </div>
+    </fieldset>
+    <p>
+        <input type="submit" value="Lưu thay đổi">
+    </p>
+</form>
+
+<script>
+    function validateWeights() {
+        const cc = parseInt(document.getElementById('percent_cc').value) || 0;
+        const bt = parseInt(document.getElementById('percent_bt').value) || 0;
+        const kt = parseInt(document.getElementById('percent_kt').value) || 0;
+        const th = parseInt(document.getElementById('percent_th').value) || 0;
+        const thi = parseInt(document.getElementById('percent_thi').value) || 0;
+
+        const total = cc + bt + kt + th + thi;
+
+        if (total !== 100) {
+            alert('Tổng trọng số điểm phải bằng 100%. Hiện tại là: ' + total + '%');
+            return false;
+        }
+        return true;
+    }
+</script>
+
+<a href="{{ url_for('admin_manage_courses') }}">Quay lại danh sách</a>
+{% endblock %}

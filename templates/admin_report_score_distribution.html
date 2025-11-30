@@ -1,0 +1,128 @@
+{% extends "_layout.html" %}
+
+{% block title %}Báo cáo: Phân bố điểm{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{{ url_for('admin_reports_index') }}"
+            style="text-decoration: none; color: var(--primary-color); float: right; font-size: 0.9em;">&laquo; Quay lại
+            Danh sách Báo cáo</a>
+        Báo cáo 4: Biểu đồ Phân bố điểm Môn học (Theo Điểm chữ)
+    </div>
+    <div class="card-body">
+
+        <form method="GET" action="{{ url_for('admin_report_score_distribution') }}">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <label for="ma_mh" style="margin-bottom: 0;">Chọn Môn học:</label>
+                <select name="ma_mh" id="ma_mh" required onchange="this.form.submit()"
+                    style="width: 100%; max-width: 400px; margin-bottom: 0;">
+                    <option value="">-- Vui lòng chọn --</option>
+                    {% for mh in danh_sach_mon_hoc %}
+                    <option value="{{ mh.ma_mh }}" {% if selected_mon_hoc and selected_mon_hoc.ma_mh==mh.ma_mh
+                        %}selected{% endif %}>
+                        {{ mh.ten_mh }} ({{ mh.ma_mh }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+
+        <hr>
+
+        {% if selected_mon_hoc %}
+        <h3>Phân bố điểm cho môn: {{ selected_mon_hoc.ten_mh }}</h3>
+
+        {% if chart_labels %}
+        <p>Biểu đồ hiển thị số lượng sinh viên tương ứng với từng mức điểm chữ (chỉ tính các SV đã có điểm tổng kết).
+        </p>
+        <div style="max-width: 600px; margin: 20px auto 0 auto;">
+            <canvas id="scoreDistributionChart"></canvas>
+        </div>
+        {% else %}
+        <p style="margin-top: 20px;">Không tìm thấy sinh viên nào đã có điểm tổng kết cho môn học này.</p>
+        {% endif %}
+
+        {% else %}
+        <p style="margin-top: 20px;">Vui lòng chọn một môn học để xem thống kê.</p>
+        {% endif %}
+
+    </div>
+</div>
+
+{% if selected_mon_hoc and chart_labels %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const labels = {{ chart_labels | tojson | safe
+    }};
+    const data = {{ chart_data | tojson | safe }};
+    const ctx = document.getElementById('scoreDistributionChart')?.getContext('2d');
+
+    if (ctx && data.length > 0) {
+        // Định nghĩa màu cho các mức điểm
+        const backgroundColors = {
+            'A': 'rgba(40, 167, 69, 0.8)',   // Green
+            'B+': 'rgba(0, 123, 255, 0.8)',  // Blue
+            'B': 'rgba(0, 123, 255, 0.6)',
+            'C+': 'rgba(255, 193, 7, 0.8)',  // Yellow
+            'C': 'rgba(255, 193, 7, 0.6)',
+            'D+': 'rgba(253, 126, 20, 0.8)', // Orange
+            'D': 'rgba(253, 126, 20, 0.6)',
+            'F': 'rgba(220, 53, 69, 0.8)'    // Red
+        };
+
+        // Tạo mảng màu dựa trên labels (A, B, C...)
+        const colors = labels.map(label => backgroundColors[label] || 'rgba(150, 150, 150, 0.8)');
+
+        new Chart(ctx, {
+            type: 'bar', // Sử dụng biểu đồ CỘT (bar chart)
+            data: {
+                labels: labels, // A, B, C...
+                datasets: [{
+                    label: 'Số lượng Sinh viên',
+                    data: data, // Số lượng
+                    backgroundColor: colors, // Mảng màu đã tạo
+                    borderColor: colors.map(color => color.replace('0.8', '1').replace('0.6', '1')),
+                    borderWidth: 1,
+                    borderRadius: 4 // Bo góc cột
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Cho phép co giãn theo container
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Điểm chữ' },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Số lượng sinh viên' },
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Tắt chú thích vì đã có màu
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' SV';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+
+{% endblock %}

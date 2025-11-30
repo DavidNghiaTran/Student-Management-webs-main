@@ -1,0 +1,111 @@
+{% extends "_layout.html" %}
+
+{% block title %}Thêm Sinh viên{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-user-plus"></i> Thêm Sinh viên mới
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+            <i class="fa-solid fa-circle-info"></i>
+            Lưu ý: Thêm sinh viên tại đây sẽ tự động tạo tài khoản đăng nhập cho sinh viên đó.
+        </div>
+
+        <form method="POST" action="{{ url_for('admin_add_student') }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Cột 1 -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-id-card"></i> Mã Sinh viên (Tên đăng nhập)
+                        </label>
+                        <input type="text" name="ma_sv" required class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: B22DVT999">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-calendar"></i> Ngày sinh
+                        </label>
+                        <input type="date" name="ngay_sinh" required class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-building-columns"></i> Khoa
+                        </label>
+                        <input type="text" name="khoa" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: Viễn thông 1">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-envelope"></i> Email
+                        </label>
+                        <input type="email" name="email" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: sinhvien@example.com">
+                    </div>
+                </div>
+
+                <!-- Cột 2 -->
+                <div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-user"></i> Họ tên
+                        </label>
+                        <input type="text" name="ho_ten" required class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: Nguyễn Văn A">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-users-rectangle"></i> Lớp
+                        </label>
+                        <input type="text" name="lop" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: D22CQVT01-B">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-graduation-cap"></i> Hệ đào tạo
+                        </label>
+                        <select name="he_dao_tao" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value="CU_NHAN">Cử nhân (4 năm)</option>
+                            <option value="KY_SU">Kỹ sư (4.5 năm)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">
+                            <i class="fa-solid fa-location-dot"></i> Địa chỉ
+                        </label>
+                        <input type="text" name="location" class="form-control"
+                            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;"
+                            placeholder="Ví dụ: Hà Nội">
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{{ url_for('admin_manage_students') }}" class="btn"
+                    style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 4px; text-decoration: none; color: #333;">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </a>
+                <button type="submit" class="btn btn-primary"
+                    style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <i class="fa-solid fa-plus"></i> Thêm mới
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

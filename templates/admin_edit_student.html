@@ -1,0 +1,61 @@
+{% extends "_layout.html" %}
+
+{% block title %}Cập nhật Sinh viên{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <a href="{{ url_for('admin_manage_students') }}"
+            style="text-decoration: none; color: var(--primary-color); float: right; font-size: 0.9em;">&laquo; Quay lại
+            Danh sách</a>
+        Cập nhật Sinh viên: {{ sv.ho_ten }} ({{ sv.ma_sv }})
+    </div>
+    <div class="card-body">
+        <p>Lưu ý: Bạn không thể sửa Mã Sinh viên.</p>
+
+        <form method="POST" action="{{ url_for('admin_edit_student', ma_sv=sv.ma_sv) }}">
+            <div style="margin-bottom: 15px;">
+                <label>Mã Sinh viên:</label>
+                <input type="text" name="ma_sv" value="{{ sv.ma_sv }}" disabled>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="ho_ten">Họ tên:</label>
+                <input type="text" name="ho_ten" id="ho_ten" value="{{ sv.ho_ten or '' }}" required>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="ngay_sinh">Ngày sinh (YYYY-MM-DD):</label>
+                <input type="date" name="ngay_sinh" id="ngay_sinh"
+                    value="{{ sv.ngay_sinh.strftime('%Y-%m-%d') if sv.ngay_sinh else '' }}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="lop">Lớp:</label>
+                <input type="text" name="lop" id="lop" value="{{ sv.lop or '' }}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="khoa">Khoa:</label>
+                <input type="text" name="khoa" id="khoa" value="{{ sv.khoa or '' }}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="he_dao_tao">Hệ đào tạo:</label>
+                <select name="he_dao_tao" id="he_dao_tao">
+                    <option value="CU_NHAN" {% if sv.he_dao_tao=='CU_NHAN' %}selected{% endif %}>Cử nhân (4 năm)
+                    </option>
+                    <option value="KY_SU" {% if sv.he_dao_tao=='KY_SU' %}selected{% endif %}>Kỹ sư (4.5 năm)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="email">Email:</label>
+                <input type="text" name="email" id="email" value="{{ sv.email or '' }}">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="location">Địa chỉ (Location):</label>
+                <input type="text" name="location" id="location" value="{{ sv.location or '' }}">
+            </div>
+            <div>
+                <input type="submit" value="Lưu thay đổi">
+            </div>
+        </form>
+
+    </div>
+</div> {% endblock %}

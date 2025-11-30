@@ -1,0 +1,9 @@
+{% extends "_layout.html" %}
+
+{% block title %}Cấm truy cập{% endblock %}
+
+{% block content %}
+    <h2>Lỗi 403: Cấm truy cập</h2>
+    <p>Bạn không có quyền truy cập trang này. Vui lòng kiểm tra lại vai trò của bạn.</p>
+    <p><a href="{{ url_for('login') }}">Quay lại trang chính</a></p>
+{% endblock %}

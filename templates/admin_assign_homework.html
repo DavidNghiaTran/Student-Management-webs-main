@@ -1,0 +1,312 @@
+{% extends "_layout.html" %}
+
+{% block title %}Giao bài tập{% endblock %}
+
+{% block styles %}
+<style>
+    .page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: #f8fafc;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        width: 100%;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted-text);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-color);
+        vertical-align: middle;
+    }
+
+    .data-table tr:hover {
+        background: #f8fafc;
+    }
+
+    .file-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .file-link:hover {
+        text-decoration: underline;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--muted-text);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i>
+        Giao bài tập
+    </div>
+</div>
+
+{% if not current_user.has_role('ADMIN') %}
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-pen-to-square"></i> Giao bài tập mới
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Tiêu đề *</label>
+                    <input type="text" name="tieu_de" class="form-control" required placeholder="Ví dụ: Bài 2 - CTDL" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Lớp nhận *</label>
+                    <select name="lop_nhan" class="form-control" required>
+                        <option value="">-- Chọn lớp --</option>
+                        {% for lop in danh_sach_lop %}
+                        <option value="{{ lop }}">{{ lop }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Môn học</label>
+                    <select name="ma_mh" class="form-control">
+                        <option value="">-- Không chọn --</option>
+                        {% for mh in danh_sach_mon_hoc %}
+                        <option value="{{ mh.ma_mh }}">{{ mh.ma_mh }} - {{ mh.ten_mh }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hạn nộp</label>
+                    <input type="date" name="han_nop" class="form-control" />
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">File đính kèm (PDF, Word, Zip)</label>
+                    <input type="file" name="file_dinh_kem" class="form-control"
+                        accept=".pdf,.doc,.docx,.zip,.rar,.png,.jpg" />
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Nội dung *</label>
+                    <textarea name="noi_dung" class="form-control" rows="4" required
+                        placeholder="Mô tả bài tập, yêu cầu nộp..."></textarea>
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Giao bài tập
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info"
+    style="margin-bottom: 2rem; padding: 1rem; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; color: #0369a1;">
+    <i class="fa-solid fa-circle-info"></i> Quản trị viên đang ở chế độ <strong>Xem danh sách</strong>.
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-clock-rotate-left"></i> Danh sách bài tập đã giao
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tiêu đề</th>
+                        <th>Lớp</th>
+                        <th>Môn</th>
+                        <th>Hạn nộp</th>
+                        <th>Nội dung</th>
+                        <th>File</th>
+                        <th style="text-align: right;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in bai_tap_list %}
+                    <tr>
+                        <td style="font-weight: 500;">{{ a.tieu_de }}</td>
+                        <td><span class="badge"
+                                style="background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem; border-radius: 4px;">{{
+                                a.lop_nhan }}</span></td>
+                        <td>{{ a.mon_hoc.ten_mh if a.mon_hoc else (a.ma_mh or '-') }}</td>
+                        <td>{{ a.han_nop and a.han_nop.strftime('%d/%m/%Y') or '-' }}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                            title="{{ a.noi_dung }}">
+                            {{ a.noi_dung }}
+                        </td>
+                        <td>
+                            {% if a.tep_dinh_kem %}
+                            <a href="{{ url_for('download_file', filename=a.tep_dinh_kem) }}" target="_blank"
+                                class="file-link">
+                                <i class="fa-solid fa-download"></i> Tải về
+                            </a>
+                            {% else %}
+                            <span style="color: var(--muted-text);">-</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            {% if not current_user.has_role('ADMIN') %}
+                            <form method="post" action="{{ url_for('admin_delete_assignment', assignment_id=a.id) }}"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa bài tập này?');" style="margin: 0;">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fa-solid fa-trash"></i> Xóa
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="fa-regular fa-folder-open"
+                                    style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                <p>Chưa có bài tập nào được giao.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
